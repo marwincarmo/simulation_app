@@ -2,8 +2,17 @@ ul.sidebar-menu {
   font-size: 1.5em;
 }
 
-#say_hi {
-  background-color: rgb(221, 75, 57);
+.box-header {
+  padding: 0 10px 0 0;
+}
+
+.box-header h3 {
+  width: 100%;
+  padding: 10px;
+}
+
+.action-button {
+  background-color: #605CA8;
   color: white;
   font-weight: bold;
 }

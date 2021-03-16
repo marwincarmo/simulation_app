@@ -27,11 +27,18 @@ debug_msg <- function(...) {
 #source("ui/main_tab.R")
 #source("ui/info_tab.R")
 
+# main_tab ----
 main_tab <- tabItem(
     tabName = "main_tab",
-    h2("Main")
+    h2("Main"),
+    box(id = "flower_box", title = "Flower", collapsible = T,
+        HTML("<img src='img/flower.jpg' width = '100%'>")
+    ),
+    actionButton("show_flower", "Show Flower"),
+    actionButton("hide_flower", "Hide Flower")
 )
 
+# info_tab ----
 info_tab <- tabItem(
     tabName = "info_tab",
     h2("Info")
@@ -46,10 +53,10 @@ info_tab <- tabItem(
 
 ## UI ----
 ui <- dashboardPage(
-    skin = "red",
+    skin = "purple",
     # header, # if sourced above
-    # sidebar, # if sourced above
     dashboardHeader(title = "Template"),
+    # sidebar, # if sourced above
     dashboardSidebar(
         # https://fontawesome.com/icons?d=gallery&m=free
         sidebarMenu(
@@ -58,13 +65,13 @@ ui <- dashboardPage(
                      icon = icon("home")),
             menuItem("Info", tabName = "info_tab",
                      icon = icon("info"))
-        ),
-        actionButton("say_hi", "Say Hi")
+        )
     ),
     dashboardBody(
         shinyjs::useShinyjs(),
         tags$head(
-            tags$link(rel = "stylesheet", type = "text/css", href = "custom.css") # links to www/custom.css
+            tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"), # links to www/custom.css
+            tags$script(src = "custom.js") # links to www/custom.js
         ),
         tabItems(
             main_tab,
@@ -76,9 +83,14 @@ ui <- dashboardPage(
 
 ## server ----
 server <- function(input, output, session) {
-    observeEvent(input$say_hi, {
-        debug_msg("say_hi", input$say_hi)
-        shinyjs::alert("Hi")
+    observeEvent(input$show_flower, {
+        debug_msg("show_flower", input$show_flower)
+        runjs("openBox('flower_box');")
+    })
+    
+    observeEvent(input$hide_flower, {
+        debug_msg("hide_flower", input$hide_flower)
+        runjs("closeBox('flower_box');")
     })
 } 
 
