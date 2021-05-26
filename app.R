@@ -46,6 +46,17 @@ unif_tab <- tabItem(
     plotOutput("unif_plot")
 )
 
+normal_tab <- tabItem(
+    tabName = "normal_tab",
+    h2("Normal Distribution"),
+    numericInput(inputId = "normal_n", label = "N", value = 10, 
+                 min = 1, max = 10000, step = 1),
+    numericInput(inputId = "normal_mean", label = "Mean", value = 0),
+    numericInput(inputId = "normal_sd", label = "Standard deviation", value = 1),
+    actionButton(inputId = "normal_submit", label = "Simulate"),
+    plotOutput("normal_plot")
+)
+
 
 # if the header and/or sidebar get too complex, 
 # put them in external files and uncomment below 
@@ -65,7 +76,9 @@ ui <- dashboardPage(
             id = "tabs",
             menuItem("Main", tabName = "main_tab",
                      icon = icon("home")),
-            menuItem("Info", tabName = "unif_tab",
+            menuItem("Uniform", tabName = "unif_tab",
+                     icon = icon("ruler-horizontal")),
+            menuItem("Normal", tabName = "normal_tab",
                      icon = icon("ruler-horizontal"))
         )
     ),
@@ -77,7 +90,8 @@ ui <- dashboardPage(
         ),
         tabItems(
             main_tab,
-            unif_tab
+            unif_tab,
+            normal_tab
         )
     )
 )
@@ -104,8 +118,28 @@ server <- function(input, output, session) {
                 geom_histogram(bins = 20) +
                 xlim(input$unif_min, input$unif_max)
         
-        
         output$unif_plot <- renderPlot(p)
+    })
+    
+    observeEvent(input$normal_submit, {
+        debug_msg("normal_submit", input$normal_submit)
+        
+        # simulate data
+        data <- rnorm(
+            n = input$normal_n,
+            mean =  input$normal_mean,
+            sd = input$normal_sd
+        )
+        
+        df <- data.frame(
+            x = data
+        )
+        # draw plot
+        
+        p <- ggplot(df, aes(x = x)) +
+            geom_histogram(bins = 20)
+        
+        output$normal_plot <- renderPlot(p)
     })
 } 
 
