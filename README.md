@@ -1,1 +1,1 @@
-Fork this project or download it to start a shiny app from a template that uses shinydashboard.
+A shiny app to plot simulated data from following some distributions.
