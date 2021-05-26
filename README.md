@@ -1,1 +1,1 @@
-A shiny app to plot simulated data from following some distributions.
+A shiny app to plot simulated data following some distributions.
