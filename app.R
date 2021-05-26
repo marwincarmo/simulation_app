@@ -38,24 +38,35 @@ main_tab <- tabItem(
 unif_tab <- tabItem(
     tabName = "unif_tab",
     h2("Uniform Distribution"),
-    numericInput(inputId = "unif_n", label = "N", value = 10, 
-                 min = 1, max = 10000, step = 1),
-    numericInput(inputId = "unif_min", label = "Minimum", value = 0),
-    numericInput(inputId = "unif_max", label = "Maximum", value = 1),
-    actionButton(inputId = "unif_submit", label = "Simulate"),
-    plotOutput("unif_plot")
-)
+    fluidRow(
+        column(width = 4,
+               numericInput("unif_n", "N", value = 10, min = 1, max = 10000, step = 1),
+               numericInput("unif_min", "Minimum", value = 0),
+               numericInput("unif_max", "Maximum", value = 1),
+               actionButton("unif_submit", "Simulate")
+        ),
+        column(width = 8,
+               plotOutput("unif_plot")
+        )
+    )
+    )
+    
 
+## normal_tab ----
 normal_tab <- tabItem(
     tabName = "normal_tab",
     h2("Normal Distribution"),
-    numericInput(inputId = "normal_n", label = "N", value = 10, 
-                 min = 1, max = 10000, step = 1),
-    numericInput(inputId = "normal_mean", label = "Mean", value = 0),
-    numericInput(inputId = "normal_sd", label = "Standard deviation", value = 1),
-    actionButton(inputId = "normal_submit", label = "Simulate"),
-    plotOutput("normal_plot")
-)
+    fluidRow(
+        column(width = 4,
+                numericInput(inputId = "normal_n", label = "N", value = 10, 
+                             min = 1, max = 10000, step = 1),
+                numericInput(inputId = "normal_mean", label = "Mean", value = 0),
+                numericInput(inputId = "normal_sd", label = "Standard deviation", value = 1),
+                actionButton(inputId = "normal_submit", label = "Simulate")
+               ),
+        column(width = 8,
+               plotOutput("normal_plot"))
+))
 
 
 # if the header and/or sidebar get too complex, 
@@ -79,7 +90,7 @@ ui <- dashboardPage(
             menuItem("Uniform", tabName = "unif_tab",
                      icon = icon("ruler-horizontal")),
             menuItem("Normal", tabName = "normal_tab",
-                     icon = icon("ruler-horizontal"))
+                     icon = icon("bell"))
         )
     ),
     dashboardBody(
@@ -99,9 +110,26 @@ ui <- dashboardPage(
 
 ## server ----
 server <- function(input, output, session) {
+    ## unif_submit ----
     observeEvent(input$unif_submit, {
         debug_msg("unif_submit", input$unif_submit)
+        # input check
+        is_numeric <- is.numeric(input$unif_n)
+        is_int <- as.integer(input$unif_n) == input$unif_n
+        is_pos <- input$unif_n >= 1
         
+        if(!is_numeric || !is_int || !is_pos){
+            shiny::showNotification("Bad n")
+            return()
+        }
+        
+        debug_msg("unif_min", input$unif_min)
+        # input check
+        is_numeric <- is.numeric(input$unif_min)
+        if(!is_numeric){
+            shiny::showNotification("Bad min")
+            return()
+        }
         # simulate data
         data <- runif(
             n = input$unif_n,
@@ -121,6 +149,7 @@ server <- function(input, output, session) {
         output$unif_plot <- renderPlot(p)
     })
     
+    ## normal_submit ----
     observeEvent(input$normal_submit, {
         debug_msg("normal_submit", input$normal_submit)
         
@@ -136,8 +165,15 @@ server <- function(input, output, session) {
         )
         # draw plot
         
+        xmin <- input$normal_mean - (4*input$normal_sd)
+        xmax <- input$normal_mean + (4*input$normal_sd)
+        
         p <- ggplot(df, aes(x = x)) +
-            geom_histogram(bins = 20)
+            geom_density() +
+            stat_function(fun = dnorm, n = 101, color = "red", 
+                          args = list(mean = input$normal_mean,
+                                      sd = input$normal_sd)) +
+            scale_x_continuous(n.breaks = 9, limits = c(xmin, xmax))
         
         output$normal_plot <- renderPlot(p)
     })
