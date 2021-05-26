@@ -3,6 +3,7 @@ suppressPackageStartupMessages({
     library(shiny)
     library(shinyjs)
     library(shinydashboard)
+    library(ggplot2)
 })
 
 ## functions ----
@@ -27,21 +28,22 @@ debug_msg <- function(...) {
 #source("ui/main_tab.R")
 #source("ui/info_tab.R")
 
-# main_tab ----
+## main_tab ----
 main_tab <- tabItem(
     tabName = "main_tab",
-    h2("Main"),
-    box(id = "flower_box", title = "Flower", collapsible = T,
-        HTML("<img src='img/flower.jpg' width = '100%'>")
-    ),
-    actionButton("show_flower", "Show Flower"),
-    actionButton("hide_flower", "Hide Flower")
+    p("This app will teach you about distributions.")
 )
 
-# info_tab ----
-info_tab <- tabItem(
-    tabName = "info_tab",
-    h2("Info")
+## unif_tab ----
+unif_tab <- tabItem(
+    tabName = "unif_tab",
+    h2("Uniform Distribution"),
+    numericInput(inputId = "unif_n", label = "N", value = 10, 
+                 min = 1, max = 10000, step = 1),
+    numericInput(inputId = "unif_min", label = "Minimum", value = 0),
+    numericInput(inputId = "unif_max", label = "Maximum", value = 1),
+    actionButton(inputId = "unif_submit", label = "Simulate"),
+    plotOutput("unif_plot")
 )
 
 
@@ -53,9 +55,9 @@ info_tab <- tabItem(
 
 ## UI ----
 ui <- dashboardPage(
-    skin = "purple",
+    skin = "red",
     # header, # if sourced above
-    dashboardHeader(title = "Template"),
+    dashboardHeader(title = "Simulation"),
     # sidebar, # if sourced above
     dashboardSidebar(
         # https://fontawesome.com/icons?d=gallery&m=free
@@ -63,8 +65,8 @@ ui <- dashboardPage(
             id = "tabs",
             menuItem("Main", tabName = "main_tab",
                      icon = icon("home")),
-            menuItem("Info", tabName = "info_tab",
-                     icon = icon("info"))
+            menuItem("Info", tabName = "unif_tab",
+                     icon = icon("ruler-horizontal"))
         )
     ),
     dashboardBody(
@@ -75,7 +77,7 @@ ui <- dashboardPage(
         ),
         tabItems(
             main_tab,
-            info_tab
+            unif_tab
         )
     )
 )
@@ -83,14 +85,27 @@ ui <- dashboardPage(
 
 ## server ----
 server <- function(input, output, session) {
-    observeEvent(input$show_flower, {
-        debug_msg("show_flower", input$show_flower)
-        runjs("openBox('flower_box');")
-    })
-    
-    observeEvent(input$hide_flower, {
-        debug_msg("hide_flower", input$hide_flower)
-        runjs("closeBox('flower_box');")
+    observeEvent(input$unif_submit, {
+        debug_msg("unif_submit", input$unif_submit)
+        
+        # simulate data
+        data <- runif(
+            n = input$unif_n,
+            min =  input$unif_min,
+            max = input$unif_max
+        )
+        
+        df <- data.frame(
+            x = data
+        )
+        # draw plot
+        
+        p <- ggplot(df, aes(x = x)) +
+                geom_histogram(bins = 20) +
+                xlim(input$unif_min, input$unif_max)
+        
+        
+        output$unif_plot <- renderPlot(p)
     })
 } 
 
